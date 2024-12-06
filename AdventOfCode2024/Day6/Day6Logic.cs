@@ -1,5 +1,4 @@
 ﻿using AdventOfCode2024.Interfaces;
-using System;
 using System.Text;
 
 namespace AdventOfCode2024.Day6
@@ -10,9 +9,9 @@ namespace AdventOfCode2024.Day6
         private const Int32 BufferSize = 128;
         private List<string> map = [];
         private Point guardStartingPosition = new();
-        List<Point> visitedPoints = [];
-        List<Point> visitedPointsUnique = [];
-        private List<Point> moves = [new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0)];
+        private HashSet<(Point, Point)> visitedPointsP1 = [];
+
+        private readonly List<Point> moves = [new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0)];
 
         public string FirstPuzzle()
         {
@@ -34,44 +33,49 @@ namespace AdventOfCode2024.Day6
                 }
             }
 
-            Move(map);
+            visitedPointsP1 = Move(map);
 
-            visitedPointsUnique = visitedPoints.Distinct(new ProductComparer()).ToList();
-
-            return visitedPointsUnique.Count().ToString();
+            return visitedPointsP1.DistinctBy(x => x.Item1).Count().ToString();
         }
 
         public string SecondPuzzle()
         {
             int result = 0;
 
-            foreach (var point in visitedPointsUnique)
+            foreach (var point in visitedPointsP1.DistinctBy(x => x.Item1))
             {
-                if(point.X == guardStartingPosition.X && point.Y == guardStartingPosition.Y)
+                if (point.Item1.X == guardStartingPosition.X && point.Item1.Y == guardStartingPosition.Y)
                 {
                     continue;
                 }
 
-                var mapUpdated = new List<string>(map);
+                var mapWithNewObsticleAdded = new List<string>(map);
 
-                StringBuilder sb = new StringBuilder(mapUpdated[point.Y]);
-                sb[point.X] = '#';
-                mapUpdated[point.Y] = sb.ToString();
+                var sb = new StringBuilder(mapWithNewObsticleAdded[point.Item1.Y]);
+                sb[point.Item1.X] = '#';
+                mapWithNewObsticleAdded[point.Item1.Y] = sb.ToString();
 
-                result += Move(mapUpdated);
+                var visitedPoints = Move(mapWithNewObsticleAdded);
+
+                if(visitedPoints.Count == 0)
+                {
+                    result++;
+                }
             }
 
             return result.ToString();
         }
 
-        private int Move(List<string> map)
+        private HashSet<(Point, Point)> Move(List<string> map)
         {
-            var currentPosition = new Point(guardStartingPosition.X, guardStartingPosition.Y);
-            visitedPoints.Add(currentPosition);
+            HashSet<(Point, Point)> visitedPoints = [];
 
             var turnsRight = 0;
+
             var currentDirection = new Point(moves[turnsRight].X, moves[turnsRight].Y);
-            var steps = 0;
+            var currentPosition = new Point(guardStartingPosition.X, guardStartingPosition.Y);
+
+            visitedPoints.Add((currentPosition, currentDirection));
 
             while (PointIsWithinMap(new Point(currentPosition.X + currentDirection.X, currentPosition.Y + currentDirection.Y)))
             {
@@ -84,18 +88,16 @@ namespace AdventOfCode2024.Day6
                 {
                     var newPosition = new Point(currentPosition.X + currentDirection.X, currentPosition.Y + currentDirection.Y);
 
-                    visitedPoints.Add(newPosition);
+                    var addSuccessful = visitedPoints.Add((newPosition, currentDirection));
+                    if(!addSuccessful)
+                    {
+                        return [];
+                    }
                     currentPosition = newPosition;
-                }
-
-                steps++;
-                if(steps > map.Count * map[0].Length)
-                {
-                    return 1; // loop
                 }
             }
 
-            return 0; // no loop
+            return visitedPoints;
         }
 
         private bool PointIsWithinMap(Point point)
@@ -108,7 +110,7 @@ namespace AdventOfCode2024.Day6
             return false;
         }
 
-        private class Point
+        private record Point
         {
             public Point()
             {
@@ -123,29 +125,6 @@ namespace AdventOfCode2024.Day6
 
             public int X { get; set; }
             public int Y { get; set; }
-
-            
-        }
-
-        class ProductComparer : IEqualityComparer<Point>
-        {
-            public bool Equals(Point? x, Point? y)
-            {
-
-                if (ReferenceEquals(x, y)) return true;
-
-                if (x is null || y is null)
-                    return false;
-
-                return x.X == y.X && x.Y == y.Y;
-            }
-
-            public int GetHashCode(Point point)
-            {
-                if (point is null) return 0;
-
-                return HashCode.Combine(point.X, point.Y);
-            }
         }
     }
 }
