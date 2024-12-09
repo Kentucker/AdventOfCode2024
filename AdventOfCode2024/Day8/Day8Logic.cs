@@ -5,7 +5,7 @@ namespace AdventOfCode2024.Day8
 {
     public class Day8Logic : IPuzzles
     {
-        private const string fileName = "day8_Input_test.in";
+        private const string fileName = "day8_Input.in";
         private const Int32 BufferSize = 128;
 
         public string FirstPuzzle()
@@ -21,9 +21,9 @@ namespace AdventOfCode2024.Day8
                 var lineNumber = 0;
                 while ((line = streamReader.ReadLine()) != null)
                 {
-                    mapSize = new Point(lineNumber, line.Length-1);
+                    mapSize = new Point(lineNumber, line.Length - 1);
 
-                    for (int i = 0; i<line.Length; i++)
+                    for (int i = 0; i < line.Length; i++)
                     {
                         if (line[i] != '.')
                         {
@@ -71,38 +71,23 @@ namespace AdventOfCode2024.Day8
                 {
                     for (int i = 0; i < antennasOfASingleTypePositions.Count - 1; i++)
                     {
-                        for(int j = i + 1; j < antennasOfASingleTypePositions.Count; j++)
+                        for (int j = i + 1; j < antennasOfASingleTypePositions.Count; j++)
                         {
                             var diffX = antennasOfASingleTypePositions[i].X - antennasOfASingleTypePositions[j].X;
                             var diffY = antennasOfASingleTypePositions[i].Y - antennasOfASingleTypePositions[j].Y;
 
-                            var point1 = new Point();
-                            var point2 = new Point();
+                            var vector = new Point(diffX, diffY);
 
-                            if (diffX * diffY > 0)
-                            {
-                                point1 = new Point(
-                                    Math.Min(antennasOfASingleTypePositions[i].X, antennasOfASingleTypePositions[j].X) - Math.Abs(diffX),
-                                    Math.Min(antennasOfASingleTypePositions[i].Y, antennasOfASingleTypePositions[j].Y) - Math.Abs(diffY)
-                                    );
-                                point2 = new Point(
-                                    Math.Max(antennasOfASingleTypePositions[i].X, antennasOfASingleTypePositions[j].X) + Math.Abs(diffX),
-                                    Math.Max(antennasOfASingleTypePositions[i].Y, antennasOfASingleTypePositions[j].Y) + Math.Abs(diffY)
-                                    );
-                            }
-                            else
-                            {
-                                point1 = new Point(
-                                    Math.Min(antennasOfASingleTypePositions[i].X, antennasOfASingleTypePositions[j].X) - Math.Abs(diffX),
-                                    Math.Max(antennasOfASingleTypePositions[i].Y, antennasOfASingleTypePositions[j].Y) + Math.Abs(diffY)
-                                    );
-                                point2 = new Point(
-                                    Math.Max(antennasOfASingleTypePositions[i].X, antennasOfASingleTypePositions[j].X) + Math.Abs(diffX),
-                                    Math.Min(antennasOfASingleTypePositions[i].Y, antennasOfASingleTypePositions[j].Y) - Math.Abs(diffY)
-                                    );
-                            }
+                            var point1 = new Point(
+                                antennasOfASingleTypePositions[i].X + vector.X,
+                                antennasOfASingleTypePositions[i].Y + vector.Y
+                                );
+                            var point2 = new Point(
+                                antennasOfASingleTypePositions[j].X - vector.X,
+                                antennasOfASingleTypePositions[j].Y - vector.Y
+                                );
 
-                            if(IsPointInMap(point1, maxMapSize))
+                            if (IsPointInMap(point1, maxMapSize))
                             {
                                 antinodes.Add(point1);
                             }
@@ -121,7 +106,7 @@ namespace AdventOfCode2024.Day8
 
         private static bool IsPointInMap(Point point, Point maxMapSize)
         {
-            if(point.X >=0 && point.X <= maxMapSize.X && point.Y >= 0 && point.Y <= maxMapSize.Y)
+            if (point.X >= 0 && point.X <= maxMapSize.X && point.Y >= 0 && point.Y <= maxMapSize.Y)
             {
                 return true;
             }
@@ -132,7 +117,7 @@ namespace AdventOfCode2024.Day8
         private struct Point
         {
             public Point()
-            {  
+            {
             }
 
             public Point(int x, int y)
