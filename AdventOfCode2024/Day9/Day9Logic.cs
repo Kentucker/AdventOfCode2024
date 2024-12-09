@@ -21,7 +21,7 @@ namespace AdventOfCode2024.Day9
 
                 while ((line = streamReader.ReadLine()) != null)
                 {
-                    
+
 
                     for (int i = 0; i < line.Length; i++)
                     {
@@ -41,7 +41,7 @@ namespace AdventOfCode2024.Day9
 
                     var index = 0;
 
-                    while(fileFragmentation[index] != -1)
+                    while (fileFragmentation[index] != -1)
                     {
                         checksum += fileFragmentation[index] * index;
                         index++;
@@ -54,19 +54,81 @@ namespace AdventOfCode2024.Day9
 
         public string SecondPuzzle()
         {
-            int result = 0;
+            long checksum = 0;
+            var fileFragmentation = new List<int>(individualBlocks);
+            var rightIndex = fileFragmentation.Count - 1;
 
-            using (var fileStream = File.OpenRead(fileName))
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+            while (rightIndex >= fileFragmentation.IndexOf(-1))
             {
-                string? line;
-                while ((line = streamReader.ReadLine()) != null)
-                {
+                var rightSublist = GetLastSublist(fileFragmentation, ref rightIndex);
+                var leftIndex = fileFragmentation.IndexOf(-1);
 
+                var leftSubListIndex = GetFirstAvailableSublistAfterIndex(fileFragmentation, rightSublist.Count, rightIndex, ref leftIndex);
+
+                if (leftSubListIndex != -1 && rightSublist.Count != 0)
+                {
+                    rightIndex++;
+
+                    for (int i = 0; i < rightSublist.Count; i++)
+                    {
+                        fileFragmentation[leftSubListIndex + i] = rightSublist.FirstOrDefault();
+                        fileFragmentation[rightIndex + i] = -1;
+                    }
                 }
             }
 
-            return result.ToString();
+            for (int i = 0; i < fileFragmentation.Count; i++)
+            {
+                if (fileFragmentation[i] != -1)
+                {
+                    checksum += fileFragmentation[i] * i;
+                }
+            }
+
+            return checksum.ToString();
+        }
+
+        private static List<int> GetLastSublist(List<int> individualBlocks, ref int index)
+        {
+            int currentValue = individualBlocks[index];
+            List<int> sublist = [];
+
+            while (index >= individualBlocks.IndexOf(-1) && individualBlocks[index] == -1)
+            {
+                index--;
+            }
+
+            while (index >= individualBlocks.IndexOf(-1) && individualBlocks[index] == currentValue && currentValue != -1)
+            {
+                sublist.Insert(0, individualBlocks[index]);
+                index--;
+            }
+
+            return sublist;
+        }
+
+        static int GetFirstAvailableSublistAfterIndex(List<int> numbers, int length, int indexTo, ref int indexFrom)
+        {
+            for (int i = indexFrom; i <= indexTo; i++)
+            {
+                bool isSublistFound = true;
+
+                for (int j = 0; j < length; j++)
+                {
+                    if (numbers[i + j] != -1)
+                    {
+                        isSublistFound = false;
+                        break;
+                    }
+                }
+
+                if (isSublistFound)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
     }
 
