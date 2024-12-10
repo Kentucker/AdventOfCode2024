@@ -7,13 +7,13 @@ namespace AdventOfCode2024.Day10
     {
         private const string fileName = "day10_Input.in";
         private const Int32 BufferSize = 128;
+        private List<string> map = [];
+        private List<Point> trailheads = [];
 
         public string FirstPuzzle()
         {
             int result = 0;
-            List<string> map = [];
-            List<Point> trailheads = [];
-
+            
             using (var fileStream = File.OpenRead(fileName))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
             {
@@ -45,14 +45,9 @@ namespace AdventOfCode2024.Day10
         {
             int result = 0;
 
-            using (var fileStream = File.OpenRead(fileName))
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+            foreach (var trailhead in trailheads)
             {
-                string? line;
-                while ((line = streamReader.ReadLine()) != null)
-                {
-
-                }
+                result += SearchAllTrailsFromHeadWithRating(map, trailhead);
             }
 
             return result.ToString();
@@ -75,6 +70,25 @@ namespace AdventOfCode2024.Day10
             }
 
             return trails.Count;
+        }
+
+        private int SearchAllTrailsFromHeadWithRating(List<string> map, Point nextHop, int numberOftrails = 0, int stepValue = 0)
+        {
+            stepValue++;
+
+            var pointNeighours = PointNeighbours(map, nextHop, stepValue);
+
+            foreach (var point in pointNeighours)
+            {
+                if (stepValue == 9)
+                {
+                    numberOftrails++;
+                }
+
+                numberOftrails = Math.Max(numberOftrails, SearchAllTrailsFromHeadWithRating(map, point, numberOftrails, stepValue));
+            }
+
+            return numberOftrails;
         }
 
         private List<Point> PointNeighbours(List<string> map, Point point, int value)
