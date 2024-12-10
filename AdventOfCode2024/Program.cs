@@ -1,7 +1,7 @@
-﻿using AdventOfCode2024.Day10;
+﻿using AdventOfCode2024.Day11;
 using System.Diagnostics;
 
-var logic = new Day10Logic();
+var logic = new Day11Logic();
 
 var stopWatch = new Stopwatch();
 stopWatch.Start();
